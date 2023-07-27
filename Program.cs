@@ -29,7 +29,7 @@ internal class Program
 
         timer.Start();
 
-        moves.GenerateMoves(140, PlayArea.Player.CurrentPosition, PlayArea._goalPossition);
+        moves.GenerateMoves(800, PlayArea.Player.CurrentPosition, PlayArea._goalPossition);
 
         Console.WriteLine(timer.Elapsed);
 
