@@ -1,9 +1,7 @@
 ﻿using ConsoleApp1.Models;
 using ConsoleApp1.NewFolder;
 using ConsoleApp1.Sturctures;
-using System.ComponentModel.Design;
 using System.Diagnostics;
-using System.Transactions;
 
 internal class Program
 {
@@ -12,7 +10,7 @@ internal class Program
         ////////////////////////////////////////
         ///  Set Console Options             ///
         ////////////////////////////////////////
-        
+
         Console.ForegroundColor = ConsoleColor.Green;
 
         ////////////////////////////////////////
@@ -25,47 +23,94 @@ internal class Program
         ///  Testing Area                    ///
         ////////////////////////////////////////
 
-        foreach (var c in PlayArea._corners)
-            Console.WriteLine(c);
-
         var timer = new Stopwatch();
 
-        MoveTree AllPossibleMoves = new MoveTree(new Node<Direction>(Direction.____), PlayArea.MazeData);
+        MoveTree moves = new MoveTree(new Node<Direction>(Direction.____), PlayArea.MazeData);
 
         timer.Start();
 
-        AllPossibleMoves.AddFilterDepthMultiThread(14, PlayArea.Player.CurrentPosition, PlayArea._goalPossition);
+        moves.GenerateMoves(140, PlayArea.Player.CurrentPosition, PlayArea._goalPossition);
 
         Console.WriteLine(timer.Elapsed);
-        
-        List<Direction> path = new List<Direction>();
 
         timer.Restart();
 
-        var moves = AllPossibleMoves.PrintPathsRecursive(AllPossibleMoves.Root, path, true);
-
         Console.WriteLine(timer.Elapsed);
 
-        //timer.Restart();
-
-        //AllPossibleMoves.PrintTreeData(moves);
-
-        //Console.WriteLine(timer.Elapsed);
-
-        //AllPossibleMoves.PrintList(moves.ToList());
+        moves.PrintPath(moves._cache[PlayArea._goalPossition]);
+        //moves.PrintPaths(allPossiblePaths.ToList());
 
         ////////////////////////////////////////
         ///  Start Main Loop                 ///
         ////////////////////////////////////////
 
+        var pathToGoal = moves._cache[PlayArea._goalPossition];
+
+        foreach (var direction in pathToGoal)
+        {
+            PlayArea.PrintCurrentState();
+
+        Move:
+            PlayArea.Player.Move(direction);
+
+            try
+            {
+                if (PlayArea.Board[PlayArea.Player.CurrentPosition.Row][PlayArea.Player.CurrentPosition.Column] == '░')
+                {
+                    PlayArea.Board
+                        [PlayArea.Player.PreviousPosition.Row]
+                        [PlayArea.Player.PreviousPosition.Column]
+                        = '0';
+
+                    PlayArea.Board
+                        [PlayArea.Player.CurrentPosition.Row]
+                        [PlayArea.Player.CurrentPosition.Column]
+                        = PlayArea.Player.Appearance;
+                }
+                else if (PlayArea.Board[PlayArea.Player.CurrentPosition.Row][PlayArea.Player.CurrentPosition.Column] == PlayArea._goalChar)
+                {
+                    PlayArea.Board
+                        [PlayArea.Player.PreviousPosition.Row]
+                        [PlayArea.Player.PreviousPosition.Column]
+                        = '0';
+
+                    PlayArea.Board
+                        [PlayArea.Player.CurrentPosition.Row]
+                        [PlayArea.Player.CurrentPosition.Column]
+                        = PlayArea.Player.Appearance;
+
+                    Console.Clear();
+                    PlayArea.PrintCurrentState();
+
+                    Console.WriteLine($"Success!\nGoal Reached in {pathToGoal.Count()} moves");
+                    goto End;
+                }
+                else
+                {
+                    Console.WriteLine($"Can't Move there! {PlayArea.Player.CurrentPosition}");
+                    PlayArea.Player.CurrentPosition = PlayArea.Player.PreviousPosition;
+                    goto Move;
+                }
+            }
+            catch
+            {
+                Console.WriteLine($"Can't Move there! {PlayArea.Player.CurrentPosition}");
+                PlayArea.Player.CurrentPosition = PlayArea.Player.PreviousPosition;
+                goto Move;
+            }
+            Thread.Sleep(300);
+            Console.Clear();
+        }
+    End:
+        Console.ReadLine();
         bool active = true;
 
         while (active)
         {
             PlayArea.PrintCurrentState();
 
-            // Wait for the player to move.
-            Move:
+        // Wait for the player to move.
+        Move:
             PlayArea.Player.Move();
 
             try
@@ -97,8 +142,6 @@ internal class Program
             }
             Console.Clear();
         }
-
-        
 
         Console.ReadLine();
     }

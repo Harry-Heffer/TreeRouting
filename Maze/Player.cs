@@ -1,5 +1,4 @@
 ﻿using ConsoleApp1.Models;
-using ConsoleApp1.Sturctures;
 
 namespace ConsoleApp1.NewFolder;
 
@@ -7,14 +6,10 @@ public class Player
 {
     public string Name { get; set; } = "Player";
     public char Appearance { get; set; } = 'P';
-    public (int Column, int Row) CurrentPosition { get; set; }
-    public (int Column, int Row) PreviousPosition { get; set; }
+    public (int Row, int Column) CurrentPosition { get; set; }
+    public (int Row, int Column) PreviousPosition { get; set; }
 
-    public Dictionary<(int Column, int Row), char> MazeData { get; set;}
-
-    public MoveTree PossibleMoves;
-    
-    public Player((int, int) currentPosition, string? name, char? appearance, Dictionary<(int Column, int Row), char> mazeData)
+    public Player((int, int) currentPosition, string? name, char? appearance)
     {
         CurrentPosition = currentPosition;
 
@@ -23,9 +18,6 @@ public class Player
 
         if (appearance != null)
             Appearance = (char)appearance;
-
-        MazeData = mazeData;
-        PossibleMoves = new MoveTree(new Node<Direction>(Direction.____), MazeData);
     }
 
     public void Move()
@@ -58,6 +50,27 @@ public class Player
                 break;
             case ConsoleKey.RightArrow:
                 CurrentPosition = (CurrentPosition.Column, CurrentPosition.Row + 1);
+                break;
+        }
+    }
+
+    public void Move(Direction direction)
+    {
+        PreviousPosition = CurrentPosition;
+
+        switch (direction)
+        {
+            case Direction.Left:
+                CurrentPosition = (CurrentPosition.Row, CurrentPosition.Column - 1);
+                break;
+            case Direction.Right:
+                CurrentPosition = (CurrentPosition.Row, CurrentPosition.Column + 1);
+                break;
+            case Direction.Up:
+                CurrentPosition = (CurrentPosition.Row - 1, CurrentPosition.Column);
+                break;
+            case Direction.Down:
+                CurrentPosition = (CurrentPosition.Row + 1, CurrentPosition.Column);
                 break;
         }
     }
